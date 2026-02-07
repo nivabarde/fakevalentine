@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Valentine Gift 💖</title>
+
+<style>
+body {
+  font-family: "Trebuchet MS", sans-serif;
+  background: linear-gradient(135deg, #ffb6c1, #ffe6f0);
+  text-align: center;
+  padding: 30px;
+  overflow-x: hidden;
+}
+
+.card {
+  background: white;
+  padding: 30px;
+  border-radius: 18px;
+  max-width: 560px;
+  margin: auto;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  position: relative;
+  z-index: 2;
+}
+
+.ribbon {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff4d88;
+  color: white;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+button {
+  padding: 12px 22px;
+  margin: 8px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff4d88, #ff85a2);
+  color: white;
+  font-size: 16px;
+}
+
+input {
+  padding: 10px;
+  margin: 6px;
+  width: 85%;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.hidden { display: none; }
+
+.error {
+  color: #cc0044;
+  font-weight: bold;
+}
+
+.hug {
+  font-size: 40px;
+  animation: hugBounce 0.6s infinite alternate;
+}
+
+@keyframes hugBounce {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
+}
+
+/* confetti */
+.confetti {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  animation: fall 3s linear forwards;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* flying hearts */
+.hearts-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.flying-heart {
+  position: absolute;
+  bottom: -20px;
+  font-size: 18px;
+  animation: flyUp 6s linear forwards;
+  opacity: 0.8;
+}
+
+@keyframes flyUp {
+  0% { transform: translateY(0) scale(0.8); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(-110vh) scale(1.4); opacity: 0; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="hearts-container"></div>
+
+<!-- PAGE 1 -->
+<div class="card" id="page1">
+  <div class="ribbon">SPECIAL DELIVERY 💌</div>
+  <h2>hello vasu</h2>
+  <p>niva has curated a very special gift for you</p>
+  <p>if you dont appreciate it niva will throw a live frog in your bathroom and lock you inside it</p>
+  <button onclick="startQuiz()">Continue</button>
+</div>
+
+<!-- QUIZ PAGE -->
+<div class="card hidden" id="quizPage">
+  <div class="ribbon">QUIZ MODE 🧠</div>
+  <p><b>Important:</b> If you get any answer wrong, punishments will be presented to you and you will not be able to move forward.</p>
+  <h3 id="questionText"></h3>
+  <div id="options"></div>
+  <p id="feedback" class="error"></p>
+</div>
+
+<!-- ASK PAGE -->
+<div class="card hidden" id="askPage">
+  <div class="ribbon">FINAL QUESTION 💘</div>
+  <h2 id="askText">Will you be my Valentine?</h2>
+  <button onclick="yesClicked()">Yes</button>
+  <button onclick="noClicked()">No</button>
+
+  <div id="noSection" class="hidden">
+    <p>Type 5 compliments for Niva:</p>
+    <input><br><input><br><input><br><input><br><input><br>
+    <button onclick="retryAsk()">Submit compliments</button>
+  </div>
+
+  <div id="yesSection" class="hidden">
+    <h2>Congratulations 💖</h2>
+    <div class="hug">🤗 🤗 🤗</div>
+    <p>You have officially unlocked hugs and happiness.</p>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    text:"1) will niva rape you",
+    options:["YES","I lookforward to it, YES"],
+    correct:"I lookforward to it, YES",
+    wrongMsg:"you owe me 5 nudes chup chap bolde you look forward to it"
+  },
+  {
+    text:"2) what is my favourite color",
+    options:["pink","blue"],
+    correct:"pink",
+    wrongMsg:"inta bhi nahi jaanta, you owe me a pink prada bag"
+  },
+  {
+    text:"3) what chocolate if my fav",
+    options:["kitkat","galaxy","dairy milk","munch"],
+    correct:"kitkat",
+    wrongMsg:"we're not friends anymore, you owe me 10 kitkats"
+  },
+  {
+    text:"4) am i a beach person or a mountain person",
+    options:["beach","mountain"],
+    correct:"beach",
+    wrongMsg:"wrong. you are taking me to maldives for our honeymoon, joking, tujhse shaadi kon karega"
+  },
+  {
+    text:"5) How cool do you think I am",
+    options:["a lot","A LOT"],
+    correct:"A LOT",
+    wrongMsg:"wrong. i am cooler than u"
+  },
+  {
+    text:"6) How much do you love me",
+    options:["A LOT","ALOTTTTTT"],
+    correct:"ALOTTTTTT",
+    wrongMsg:"wrong. you love me ALOTTTTTT"
+  }
+];
+
+let current = 0;
+
+function startQuiz() {
+  page1.classList.add("hidden");
+  quizPage.classList.remove("hidden");
+  loadQuestion();
+}
+
+function loadQuestion() {
+  const q = questions[current];
+  questionText.innerText = q.text;
+  feedback.innerText = "";
+  options.innerHTML = "";
+
+  q.options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.innerText = opt;
+    btn.onclick = () => checkAnswer(opt);
+    options.appendChild(btn);
+  });
+}
+
+function checkAnswer(selected) {
+  const q = questions[current];
+  if (selected === q.correct) {
+    current++;
+    if (current === questions.length) {
+      quizPage.classList.add("hidden");
+      askPage.classList.remove("hidden");
+    } else {
+      loadQuestion();
+    }
+  } else {
+    feedback.innerText = q.wrongMsg;
+  }
+}
+
+function noClicked() {
+  noSection.classList.remove("hidden");
+}
+
+function retryAsk() {
+  noSection.classList.add("hidden");
+  askText.innerText = "Will you be my Fake Valentine? choose wisely";
+}
+
+function yesClicked() {
+  yesSection.classList.remove("hidden");
+  launchConfetti();
+}
+
+function launchConfetti() {
+  for (let i = 0; i < 80; i++) {
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.background = ["#ff4d88","#ffd1dc","#ff85a2"][Math.floor(Math.random()*3)];
+    c.style.animationDuration = 2 + Math.random() * 2 + "s";
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
+
+/* flying hearts generator */
+const heartsContainer = document.querySelector(".hearts-container");
+setInterval(() => {
+  const heart = document.createElement("div");
+  heart.className = "flying-heart";
+  heart.innerHTML = "💖";
+  heart.style.left = Math.random() * 100 + "vw";
+  heart.style.animationDuration = (Math.random() * 3 + 4) + "s";
+  heartsContainer.appendChild(heart);
+  setTimeout(() => heart.remove(), 7000);
+}, 400);
+</script>
+
+</body>
+</html>
